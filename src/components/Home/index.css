@@ -1,0 +1,21 @@
+.home-bg {
+  background-image: url('https://assets.ccbp.in/frontend/react-js/home-lg-bg.png');
+  background-size: cover;
+  color: #f1f5f9;
+  padding-left: 30px;
+  padding-top: 30px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.btn-blue {
+  font-weight: bold;
+  background-color: #6366f1;
+  border-radius: 10px;
+  color: #ffffff;
+  padding: 10px;
+  margin: 15px;
+  border-width: 0px;
+}

@@ -20,6 +20,28 @@ const apiProfileStatusConstants = {
   inProgress: 'IN_PROGRESS',
   failure: 'FAILURE',
 }
+const location = [
+  {
+    place: 'Hyderabad',
+    placeId: 'Hyderabad',
+  },
+  {
+    place: 'Bangalore',
+    placeId: 'Bangalore',
+  },
+  {
+    place: 'Chennai',
+    placeId: 'Chennai',
+  },
+  {
+    place: 'Delhi',
+    placeId: 'Delhi',
+  },
+  {
+    place: 'Mumbai',
+    placeId: 'Mumbai',
+  },
+]
 class Jobs extends Component {
   state = {
     apiStatus: apiStatusConstants.initial,
@@ -29,6 +51,7 @@ class Jobs extends Component {
     employmentType: [],
     salaryRange: '',
     searchInput: '',
+    selectedLocations: [],
   }
 
   componentDidMount() {
@@ -70,9 +93,15 @@ class Jobs extends Component {
   getJobs = async () => {
     this.setState({apiStatus: apiStatusConstants.inProgress})
 
-    const {employmentType, salaryRange, searchInput} = this.state
+    const {
+      employmentType,
+      salaryRange,
+      searchInput,
+      selectedLocations,
+    } = this.state
+
     const employmenttype = employmentType.join(',')
-    const jobsAPI = `https://apis.ccbp.in/jobs?employment_type=${employmenttype}&minimum_package=${salaryRange}&search=${searchInput}`
+    const jobsApiUrl = `https://apis.ccbp.in/jobs?employment_type=${employmenttype}&minimum_package=${salaryRange}&search=${searchInput}`
     const jwtToken = Cookies.get('jwt_token')
     const options = {
       method: 'GET',
@@ -80,8 +109,9 @@ class Jobs extends Component {
         Authorization: `Bearer ${jwtToken}`,
       },
     }
-    const response = await fetch(jobsAPI, options)
+    const response = await fetch(jobsApiUrl, options)
     const data = await response.json()
+    console.log(data)
     if (response.ok === true) {
       const updatedJobs = data.jobs.map(job => ({
         companyLogoUrl: job.company_logo_url,
@@ -151,7 +181,8 @@ class Jobs extends Component {
   }
 
   renderJobsListView = () => {
-    const {jobsList} = this.state
+    const {jobsList, selectedLocations, employmentType} = this.state
+    console.log(employmentType)
     // const {
     //   companyLogoUrl,
     //   employmentType,
@@ -162,10 +193,15 @@ class Jobs extends Component {
     //   rating,
     //   title,
     // } = jobsList
-
+    const locationFilteredJobs =
+      selectedLocations.length === 0
+        ? jobsList
+        : jobsList.filter(eachJob =>
+            selectedLocations.includes(eachJob.location),
+          )
     return (
       <>
-        {jobsList.length === 0 ? (
+        {locationFilteredJobs.length === 0 ? (
           <div>
             <img
               src="https://assets.ccbp.in/frontend/react-js/no-jobs-img.png"
@@ -178,7 +214,7 @@ class Jobs extends Component {
           </div>
         ) : (
           <ul>
-            {jobsList.map(eachJob => (
+            {locationFilteredJobs.map(eachJob => (
               <Link to={`/jobs/${eachJob.id}`} key={eachJob.id}>
                 <li className="job-container">
                   <div>
@@ -264,25 +300,47 @@ class Jobs extends Component {
   }
 
   onChangeEmploymentType = event => {
-    this.setState(
-      prevState => ({
-        employmentType: [...prevState.employmentType, event.target.value],
-      }),
-      this.getJobs,
-    )
+    const {employmentType} = this.state
+    if (event.target.checked === true) {
+      this.setState(
+        prevState => ({
+          employmentType: [...prevState.employmentType, event.target.value],
+        }),
+        this.getJobs,
+      )
+    } else {
+      const filteredEmployementTypes = employmentType.filter(
+        eachEmployement => eachEmployement !== event.target.value,
+      )
+      console.log(filteredEmployementTypes)
+      this.setState({employmentType: filteredEmployementTypes}, this.getJobs)
+    }
   }
 
-  // onClickRetryJobs = () => {
-  //   this.getJobs()
-  // }
-  // onClickRetryProfile = () => {
-  //   this.getProfile()
-  // }
+  onChangeLocation = event => {
+    const {selectedLocations} = this.state
+    if (event.target.checked === true) {
+      this.setState(
+        prevState => ({
+          selectedLocations: [
+            ...prevState.selectedLocations,
+            event.target.value,
+          ],
+        }),
+        this.getJobs,
+      )
+    } else {
+      const updatedLocations = selectedLocations.filter(
+        eachLocation => eachLocation !== event.target.value,
+      )
+      this.setState({selectedLocations: updatedLocations}, this.getJobs)
+    }
+  }
+
   render() {
-    const {searchInput} = this.state
+    const {searchInput, selectedLocations} = this.state
     const {employmentTypesList, salaryRangesList} = this.props
-    // const {label, employmentTypeId} = employmentTypesList
-    // const {salaryRangeId ,label} = salaryRangesList
+
     return (
       <>
         <Header />
@@ -330,6 +388,25 @@ class Jobs extends Component {
                       className="text-white"
                     >
                       {salary.label}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <hr />
+            <div>
+              <h5>Location</h5>
+              <ul>
+                {location.map(eachLocation => (
+                  <li key={eachLocation.placeId}>
+                    <input
+                      type="checkbox"
+                      id={eachLocation.placeId}
+                      value={eachLocation.placeId}
+                      onChange={this.onChangeLocation}
+                    />
+                    <label htmlFor={eachLocation.placeId}>
+                      {eachLocation.place}
                     </label>
                   </li>
                 ))}

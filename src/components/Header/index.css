@@ -1,6 +1,9 @@
 .header-bg {
   background-color: #272727;
   padding: 0px;
+  width: 100%;
+  position: sticky;
+  top: 0;
 }
 .btn-blue {
   font-weight: bold;
@@ -10,4 +13,9 @@
   padding: 10px;
   margin: 15px;
   border-width: 0px;
+}
+.header-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
